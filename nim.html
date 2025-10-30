@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Game of Nim</title>
+    <style>
+      #title {
+        display: flex;
+        align-items: center;
+      }
+      #title h1 {
+        margin-right: 25px;
+      }
+      #human {
+        display: flex;
+        align-items: center;
+      }
+      #computer {
+        display: flex;
+        align-items: center;
+      }
+      .playerButton{
+        font-size: 24px;
+        border: none;
+      }    
+      .nullButton{
+        font-size: 24px;
+        background-color: white; 
+        color: white; 
+        border: none;
+      }
+      #resetButton {
+        display: block;
+      }
+      li h2 {
+        margin: 0;
+      }
+    </style>
+	</head>
+	<body>
+    <div id="title">
+      <h1>Game of Nim</h1>
+    </div>
+  		<li>This version of NIM has four rows, and you can only take one, two, or three items from one row at a time.</li>
+    <li>This is the misere version, in which the player who takes the last item loses.</li>
+    <li>Clicking on an item will remove that item and all items to the right on the line, if that is a legal move.</li>    
+    <br>      
+    <button id="oneonenullButton" class="nullButton" onclick="null_button()">0</button> 
+    <button id="onetwonullButton" class="nullButton" onclick="null_button()">0</button>
+    <button id="onethreenullButton" class="nullButton" onclick="null_button()">0</button>
+    <button id="oneoneButton" class="playerButton" onclick="human_play(0, 1)">1</button>   
+    <br> 
+    <button id="twoonenullButton" class="nullButton" onclick="null_button()">0</button>
+    <button id="twotwonullButton" class="nullButton" onclick="null_button()">0</button>
+    <button id="twooneButton" class="playerButton" onclick="human_play(1, 1)">1</button>
+    <button id="twotwoButton" class="playerButton" onclick="human_play(1, 2)">2</button>
+    <button id="twothreeButton" class="playerButton" onclick="human_play(1, 3)">3</button>
+    <br>
+    <button id="threeonenullButton" class="nullButton" onclick="null_button()">0</button>
+    <button id="threeoneButton" class="playerButton" onclick="human_play(2, 1)">1</button>
+    <button id="threetwoButton" class="playerButton" onclick="human_play(2, 2)">2</button>
+    <button id="threethreeButton" class="playerButton" onclick="human_play(2, 3)">3</button>
+    <button id="threefourButton" class="playerButton" onclick="human_play(2, 4)">4</button>
+    <button id="threefiveButton" class="playerButton" onclick="human_play(2, 5)">5</button>  
+    <br>
+    <button id="fouroneButton" class="playerButton" onclick="human_play(3, 1)">1</button>
+    <button id="fourtwoButton" class="playerButton" onclick="human_play(3, 2)">2</button>
+    <button id="fourthreeButton" class="playerButton" onclick="human_play(3, 3)">3</button>
+    <button id="fourfourButton" class="playerButton" onclick="human_play(3, 4)">4</button>
+    <button id="fourfiveButton" class="playerButton" onclick="human_play(3, 5)">5</button>
+    <button id="foursixButton" class="playerButton" onclick="human_play(3, 6)">6</button>
+    <button id="foursevenButton" class="playerButton" onclick="human_play(3, 7)">7</button>            
+    <br>
+    <br>
+    <button id="humanButton" onclick="beast_button()">Your turn:</button>
+    <button id="computerButton" onclick="null_button()">The computer is thinking....</button>
+    <button id="resetButton" onclick="reset()">Reset</button>     
+    <br>
+    <ul id="log">
+    </ul>
+	</body>
+	
+	<script>
+			let board = [1, 3, 5, 7];
+			let computer_first = false;
+			let players_turn = true;	
+			let beast = 6;
+			
+			reset();
+			
+      function count(b) {
+          return (b[0] + b[1] + b[2] + b[3]);
+      }
+      
+      function toggle_starter() {
+          if (computer_first) {
+              computer_first = false;
+              players_turn = true;
+          } else {
+              computer_first = true;
+              players_turn = false;
+          }
+          reset();
+      }
+      
+      function human_play(row, choice) {
+          // is this a legal move?
+          if ((board[row] - choice) > 2)
+              return;
+          board[row] = choice -1;
+          players_turn = false;
+          display();
+          // this is going to take a while so use a zero timeout to repaint
+          setTimeout(() => {
+              computer_play();
+          }, 0);
+      }
+
+      function minimax(inboard, max) {
+          let b = [...inboard];
+          let score, thisscore = 0, bestscore, bestr = -1, bestc = -1;
+          let i, r, c;
+    
+          if (count(inboard) == 0){    
+              return(max);
+          }
+          if (count(inboard) == 1) {
+              return(-1 * max);
+          }     
+          if (max == 1)
+              bestscore = -2;
+          else
+              bestscore = 2;
+    
+          // try all legal moves
+          for(r = 0; r < 4; r++) {
+              for(c = 1; c < 4; c++) {    
+                  // reset trial board to input values
+                  for(i = 0; i < 4; i++)
+                      b[i] = inboard[i];
+                  if(b[r] >= c) {
+                      b[r] -= c;
+                      thisscore = minimax(b, max * -1);
+                      if (max == 1) {
+                          if(thisscore > bestscore) {
+                              bestscore = thisscore;
+                              bestr = r;
+                              bestc = c;
+                          }  
+                      } else {
+                          if (thisscore < bestscore) {
+                              bestscore = thisscore;
+                              bestr = r;
+                              bestc = c;                  
+                          }
+                      }
+                  }
+              }
+          }
+          if(bestr == -1) 
+              return 0;
+    
+          inboard[bestr] -= bestc;
+          return bestscore;
+      }
+      
+      function computer_play() {
+          if (count(board) == 1) {
+              log('<h2>You Won!</h2>');
+              return;
+          }
+          minimax(board, 1);
+          if (count(board) == 1)
+              log('<h2>You Lost!</h2>');
+          else 
+              players_turn = true;         
+          display();         
+      }
+
+      function log(message) {
+        document.getElementById('log').innerHTML += '<li>' + message + '</li>'
+      }
+
+      function display() {
+        const playerButtons = document.getElementsByClassName('playerButton');
+        for (const button of playerButtons) {
+          button.disabled = false;
+        }
+        if (board[0] == 0)
+           document.getElementById('oneoneButton').disabled = true;
+        if (board[1] < 3)
+           document.getElementById('twothreeButton').disabled = true;
+        if (board[1] < 2)
+           document.getElementById('twotwoButton').disabled = true;
+        if (board[1] < 1)
+           document.getElementById('twooneButton').disabled = true;   
+        if (board[2] < 5)
+           document.getElementById('threefiveButton').disabled = true;   
+        if (board[2] < 4)
+           document.getElementById('threefourButton').disabled = true;        
+        if (board[2] < 3)
+           document.getElementById('threethreeButton').disabled = true;            
+        if (board[2] < 2)
+           document.getElementById('threetwoButton').disabled = true;   
+        if (board[2] < 1)
+           document.getElementById('threeoneButton').disabled = true;   
+        if (board[3] < 7)
+           document.getElementById('foursevenButton').disabled = true;   
+        if (board[3] < 6)
+           document.getElementById('foursixButton').disabled = true;        
+        if (board[3] < 5)
+           document.getElementById('fourfiveButton').disabled = true;            
+        if (board[3] < 4)
+           document.getElementById('fourfourButton').disabled = true;   
+        if (board[3] < 3)
+           document.getElementById('fourthreeButton').disabled = true;              
+        if (board[3] < 2)
+           document.getElementById('fourtwoButton').disabled = true;   
+        if (board[3] < 1)
+           document.getElementById('fouroneButton').disabled = true;   
+           
+        if (players_turn) {
+           document.getElementById('humanButton').style.display = 'block';
+           document.getElementById('computerButton').style.display = 'none';
+        } else {
+           document.getElementById('humanButton').style.display = 'none';
+           document.getElementById('computerButton').style.display = 'block';        
+        }
+      }
+
+      function reset() {
+          board[0] = 1;
+          board[1] = 3;
+          board[2] = 5;
+          board[3] = 7;
+          beast = 5;
+        
+         document.getElementById('log').innerHTML = '<br>'
+          if (computer_first) {
+              players_turn = false;
+              display();
+              setTimeout(() => {
+                  computer_play();
+              }, 0);            
+         } else {
+              players_turn = true;
+              display();
+          }
+      }
+      
+      function beast_button() {
+          if (beast-- == 0)
+              toggle_starter();
+      }
+      
+      function null_button() {
+          let foo = 0;
+      }
+      
+</script>
+</html>
