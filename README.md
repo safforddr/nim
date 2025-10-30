@@ -1,10 +1,10 @@
 Simple C and javascript minimax programs for playing/solving NIM.
 
 This code is for the variant with
-    2 players.
-    4 rows of 1, 3, 5, 7 items.
-    A turn can remove 1, 2, or 3 items from one row.
-    misere play (player who takes last item loses.)
+* 2 players.
+* 4 rows of 1, 3, 5, 7 items.
+* A turn can remove 1, 2, or 3 items from one row.
+* misere play (player who takes last item loses.)
 
 There are many sources that say NIM can be solved by suitably calculating 
 the "nim-weight", typicaly the xor of the number in each row in binary,
